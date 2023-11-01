@@ -11,6 +11,7 @@ import Codec.Picture
 
 data Vector = Vector Double Double
               deriving Show
+vector :: Double -> Double -> Vector
 vector = Vector
 
 cross :: Vector -> Vector -> Double
@@ -30,8 +31,9 @@ data Matrix = Matrix Vector Vector
 matrix :: Double -> Double -> Double -> Double -> Matrix
 matrix a b c d = Matrix (Vector a b) (Vector c d)
 
-getX (Vector x y) = x
-getY (Vector x y) = y
+getX, getY :: Vector -> Double
+getX (Vector x _) = x
+getY (Vector _ y) = y
 
 -- Defining Points
 type Point  = Vector
@@ -86,10 +88,13 @@ data Transform = Identity
            | Rotate Matrix
              deriving Show
 
+identity :: Transform
 identity = Identity
+translate, scale, shear :: Vector -> Transform
 translate = Translate
 scale = Scale
 shear = Shear
+rotate :: Double -> Transform
 rotate angle = Rotate $ matrix (cos angle) (-sin angle) (sin angle) (cos angle)
 
 (<+>) :: Transform -> Shape -> Shape -- Apply another transformation to a shape
@@ -118,7 +123,7 @@ inside1 :: Point -> CShape -> Colour
 inside1 p ((t,s),c) = if insides (transform t p) s then c else (0,0,0)
 
 insides :: Point -> BaseShape -> Bool
-p `insides` Empty = False
+_ `insides` Empty = False
 p `insides` UnitCircle = distance p <= 1
 p `insides` UnitSquare = maxnorm  p <= 1
 p `insides` (BasePolygon points) = odd (polygonCountIntersects p points)
@@ -135,10 +140,10 @@ insideColour p d = firstColour $ map (inside1 p) d -- head $ map (approxinside1 
 
 -- Functions for polygon drawing
 polygonCountIntersects :: Point -> [Point] -> Int
-polygonCountIntersects point [] = undefined
-polygonCountIntersects point [a, b] = if rayIntersects point (a, b) then 1 else 0
-polygonCountIntersects point (a:as) = polygonCountIntersects point as + x
-                                      where x = if rayIntersects point (a, head as) then 1 else 0
+polygonCountIntersects _ [] = undefined
+polygonCountIntersects p [a, b] = if rayIntersects p (a, b) then 1 else 0
+polygonCountIntersects p (a:as) = polygonCountIntersects p as + x
+                                      where x = if rayIntersects p (a, head as) then 1 else 0
 
 rayIntersects :: Point -> (Point, Point) -> Bool
 rayIntersects (Vector x y) (Vector ax ay, Vector bx by) = (x <= min ax bx) && (y >= min ay by) && (y <= max ay by)
@@ -149,4 +154,5 @@ distance (Vector x y ) = sqrt ( x**2 + y**2 )
 maxnorm :: Point -> Double
 maxnorm (Vector x y ) = max (abs x) (abs y)
 
+testShape :: (Transform, Double -> Shape)
 testShape = (scale (point 10 10), circle)
