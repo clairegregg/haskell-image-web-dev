@@ -33,43 +33,47 @@ matrix a b c d = Matrix (Vector a b) (Vector c d)
 getX (Vector x y) = x
 getY (Vector x y) = y
 
--- Shapes
-
+-- Defining Points
 type Point  = Vector
 
 point :: Double -> Double -> Point
 point = vector
 
-data Shape = Empty
-           | Circle
-           | Square
-           | Polygon [ Point ]
+-- Basic Shapes - these form the underlying logic of the shapes, but will not be accessed by users
+data BaseShape = Empty
+           | UnitCircle
+           | UnitSquare
+           | BasePolygon [ Point ]
           deriving Show
 
-empty, cr, sq :: Shape
-
+empty, cr, sq :: BaseShape
 empty = Empty
-cr = Circle
-sq = Square
+cr = UnitCircle
+sq = UnitSquare
 
--- Note that polygon requires the list of points be closed (ie the first element is the same as the last element)
-polygon :: [Point] -> Shape
-polygon = Polygon
+poly :: [ Point ] -> BaseShape -- Note that polygon requires the list of points be closed (ie the first element is the same as the last element)
+poly = BasePolygon
 
-square :: Double -> (Transform, Shape)
+-- Shapes - this is what the user should be interacting with
+-- These are basic shapes with some transformation applied to them
+type Shape = (Transform, BaseShape)
+
+square :: Double -> Shape
 square w = (scale (point w w), sq)
 
-circle :: Double -> (Transform, Shape)
+circle :: Double -> Shape
 circle r = (scale (point r r), cr)
 
-rectangle :: Double -> Double -> (Transform, Shape)
+rectangle :: Double -> Double -> Shape
 rectangle w h = (scale (point w h), sq)
 
-ellipse :: Double -> Double -> (Transform, Shape)
+ellipse :: Double -> Double -> Shape
 ellipse w h = (scale (point w h), cr)
 
--- Transformations
+polygon :: [ Point ] -> Shape
+polygon v = (identity, poly v)
 
+-- Transformations
 data Transform = Identity
            | Translate Vector
            | Scale Vector
@@ -83,6 +87,8 @@ translate = Translate
 scale = Scale
 shear = Shear
 rotate angle = Rotate $ matrix (cos angle) (-sin angle) (sin angle) (cos angle)
+
+(<+>) :: Transform -> Shape -> Shape -- Apply another transformation to a shape
 t0 <+> (t1,s) = (Compose t0 t1, s)
 
 transform :: Transform -> Point -> Point
@@ -93,12 +99,11 @@ transform (Shear (Vector tx ty)) (Vector px py) = Vector (px + (tx * py)) (py + 
 transform (Rotate m)                 p = invert m `mult` p
 transform (Compose t1 t2)            p = transform t2 $ transform t1 p
 
--- Complex shapes
+-- Shapes with colours
 type Colour = (Pixel8, Pixel8, Pixel8)
-type CShape = ((Transform,Shape),Colour)
+type CShape = (Shape,Colour)
 
 -- Drawings
-
 type Drawing = [CShape]
 
 -- interpretation function for drawings
@@ -108,11 +113,11 @@ type Drawing = [CShape]
 inside1 :: Point -> CShape -> Colour
 inside1 p ((t,s),c) = if insides (transform t p) s then c else (0,0,0)
 
-insides :: Point -> Shape -> Bool
+insides :: Point -> BaseShape -> Bool
 p `insides` Empty = False
-p `insides` Circle = distance p <= 1
-p `insides` Square = maxnorm  p <= 1
-p `insides` (Polygon points) = odd (polygonCountIntersects p points)
+p `insides` UnitCircle = distance p <= 1
+p `insides` UnitSquare = maxnorm  p <= 1
+p `insides` (BasePolygon points) = odd (polygonCountIntersects p points)
 
 insideColour :: Point -> Drawing -> Colour
 insideColour p d = firstColour $ map (inside1 p) d -- head $ map (approxinside1 p) d 
