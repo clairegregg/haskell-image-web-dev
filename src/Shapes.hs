@@ -1,7 +1,7 @@
 module Shapes(
   Shape, Point, Vector, Transform, Drawing,
   point, getX, getY, cr,
-  empty, circle, square, rectangle, polygon,
+  empty, circle, square, rectangle, polygon, maskedShape,
   identity, translate, rotate, scale, shear, (<+>),
   insideColour)  where
 import Codec.Picture
@@ -44,6 +44,7 @@ data BaseShape = Empty
            | UnitCircle
            | UnitSquare
            | BasePolygon [ Point ]
+           | MaskedImage Shape Shape
           deriving Show
 
 empty, cr, sq :: BaseShape
@@ -72,6 +73,9 @@ ellipse w h = (scale (point w h), cr)
 
 polygon :: [ Point ] -> Shape
 polygon v = (identity, poly v)
+
+maskedShape :: Shape -> Shape -> Shape
+maskedShape s1 s2 = (identity, MaskedImage s1 s2)
 
 -- Transformations
 data Transform = Identity
@@ -118,6 +122,8 @@ p `insides` Empty = False
 p `insides` UnitCircle = distance p <= 1
 p `insides` UnitSquare = maxnorm  p <= 1
 p `insides` (BasePolygon points) = odd (polygonCountIntersects p points)
+p `insides` (MaskedImage (t1,s1) (t2,s2)) = (transform t1 p `insides` s1) && (transform t2 p `insides` s2)
+
 
 insideColour :: Point -> Drawing -> Colour
 insideColour p d = firstColour $ map (inside1 p) d -- head $ map (approxinside1 p) d 
