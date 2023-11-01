@@ -112,7 +112,7 @@ insides :: Point -> Shape -> Bool
 p `insides` Empty = False
 p `insides` Circle = distance p <= 1
 p `insides` Square = maxnorm  p <= 1
-p `insides` (Polygon points) = even (polygonCountIntersects p points)
+p `insides` (Polygon points) = odd (polygonCountIntersects p points)
 
 insideColour :: Point -> Drawing -> Colour
 insideColour p d = firstColour $ map (inside1 p) d -- head $ map (approxinside1 p) d 
