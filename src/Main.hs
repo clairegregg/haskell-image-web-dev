@@ -1,13 +1,31 @@
-module Main where
+{-# LANGUAGE OverloadedStrings #-}
 
-import Shapes
-import Render (render,defaultWindow)
+module Main(main) where
+    
+import Data.Text.Lazy
+import Web.Scotty
+import qualified Text.Blaze.Html5 as H
+import qualified Text.Blaze.Html.Renderer.Text as R
+-- I don't actually use any attributes in this example
+-- so I commented this next line out, but this is how
+-- you get them imported when you need them.
+-- import qualified Text.Blaze.Html5.Attributes as A
 
---exampleDrawing =  [ (shear (point 0.5 0) <+> circle 0.5, (0, 255, 0)) ]
---exampleDrawing =  [ (polygon [point 0 (-1), point (-0.95) (-0.31), point (-0.59) 0.81, point 0.95 (-0.31), point 0 (-1)], (0, 255, 0)) ]
-poly = polygon [point 0 (-1), point (-0.95) (-0.31), point (-0.59) 0.81, point 0.95 (-0.31), point 0 (-1)]
-circ = circle 0.5
 
-exampleDrawing = [ (maskedShape poly circ, (0, 255, 0))]
+main:: IO ()
+main = scotty 3000 $ do
+  get "/" $ do
+    html "Hello World!"
 
-main = render "output.png" defaultWindow exampleDrawing
+{-
+  get "/greet/" $ do
+      html  "Hello there"
+-}
+
+  get "/greet/:name" $ do
+      name <- param "name"
+      html $ response name
+
+response :: Text -> Text
+response n = do R.renderHtml $ do
+                  H.h1 ( "Hello " >> H.toHtml n)
