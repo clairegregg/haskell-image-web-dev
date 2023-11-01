@@ -1,31 +1,22 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Main(main) where
+module Main(Main.main) where
     
 import Data.Text.Lazy
-import Web.Scotty
-import qualified Text.Blaze.Html5 as H
+import qualified Web.Scotty as S
+import Text.Blaze.Html5 
 import qualified Text.Blaze.Html.Renderer.Text as R
--- I don't actually use any attributes in this example
--- so I commented this next line out, but this is how
--- you get them imported when you need them.
--- import qualified Text.Blaze.Html5.Attributes as A
+import qualified Text.Blaze.Html5.Attributes as A
+import Network.Wai.Middleware.Static
 
 
 main:: IO ()
-main = scotty 3000 $ do
-  get "/" $ do
-    html "Hello World!"
+main = S.scotty 3000 $ do
+  S.middleware $ staticPolicy (noDots >-> addBase "static")
+  S.get "/" $ S.html response
 
-{-
-  get "/greet/" $ do
-      html  "Hello there"
--}
+response :: Text
+response = R.renderHtml outputImage
 
-  get "/greet/:name" $ do
-      name <- param "name"
-      html $ response name
-
-response :: Text -> Text
-response n = do R.renderHtml $ do
-                  H.h1 ( "Hello " >> H.toHtml n)
+outputImage :: Html
+outputImage = img ! A.src "output.png" ! A.alt "Generated image."

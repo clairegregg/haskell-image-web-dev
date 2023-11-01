@@ -48,3 +48,4 @@ executables:
     - scotty
     - blaze-html
     - text
+    - wai-middleware-static
