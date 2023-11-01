@@ -33,9 +33,6 @@ coords :: Window -> [[(Int,Int)]]
 coords (Window _ _ (w,h)) = [ [(x,y) | x <- [0..w]] | y <- [0..h] ]
 
 -- render a drawing into an image, then save into a file
--- NB: the lookup1 function is a VERY inefficient way to convert screen coordinates to drawing
---     coordinates! It should be possible to do this in O(1) time, not O(N) time!!
---     If you enlarge the viewport in defaultWindow from 50x50 to 500x500 then you will see the problem.
 render :: String -> Window -> Drawing -> IO ()
 render path win sh = writePng path $ generateImage pixRenderer w h
     where

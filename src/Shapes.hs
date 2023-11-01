@@ -104,8 +104,15 @@ transform :: Transform -> Point -> Point
 transform Identity                   x = x
 transform (Translate (Vector tx ty)) (Vector px py)  = Vector (px - tx) (py - ty)
 transform (Scale (Vector tx ty))     (Vector px py)  = Vector (px / tx)  (py / ty)
-transform (Shear (Vector tx ty)) (Vector px py) = Vector (px + (tx * py)) (py + (ty * px))
+transform (Shear (Vector tx ty)) (Vector px py) = Vector (px - (py * tx)) (py - (px * ty))
 transform (Rotate m)                 p = invert m `mult` p
+
+-- Transformation composition
+transform (Compose Identity t)       p = transform t p
+transform (Compose t Identity)       p = transform t p
+transform (Compose (Translate (Vector tx1 ty1)) (Translate (Vector tx2 ty2))) p = transform (Translate (Vector (tx1 + tx2) (ty1 + ty2))) p
+transform (Compose (Scale (Vector tx1 ty1)) (Scale (Vector tx2 ty2))) p = transform (Scale (Vector (tx1 * tx2) (ty1 * ty2))) p
+transform (Compose (Shear (Vector tx1 ty1)) (Shear (Vector tx2 ty2))) p = transform (Shear (Vector (tx1 * tx2) (ty1 * ty2))) p
 transform (Compose t1 t2)            p = transform t2 $ transform t1 p
 
 -- Shapes with colours

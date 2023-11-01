@@ -12,8 +12,8 @@ import Shapes
 import Render (render,defaultWindow)
 
 exampleDrawing :: [ (Shape, Colour) ]
-exampleDrawing =  [ (polygon [point 0 (-1), point (-0.95) (-0.31), point (-0.59) 0.81, point 0.95 (-0.31), point 0 (-1)], (0, 255, 0)) ]
---exampleDrawing = [(circle 0.5, (255,0,0))]
+--exampleDrawing =  [ (polygon [point 0 (-1), point (-0.95) (-0.31), point (-0.59) 0.81, point 0.95 (-0.31), point 0 (-1)], (0, 255, 0)) ]
+exampleDrawing = [(shear (point 0 2) <+> (shear (point 0 2) <+> circle 0.5), (255,0,0))]
 
 exampleDrawingText :: String
 exampleDrawingText = "[ (polygon [point 0 (-1), point (-0.95) (-0.31), point (-0.59) 0.81, point 0.95 (-0.31), point 0 (-1)], (0, 255, 0)) ]"
