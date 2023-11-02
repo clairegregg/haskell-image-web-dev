@@ -1,7 +1,7 @@
 module Shapes(
   Shape, Point, Vector, Transform, Drawing, Colour,
   point, getX, getY, cr,
-  empty, circle, square, rectangle, polygon, maskedShape,
+  empty, circle, square, ellipse, rectangle, polygon, maskedShape,
   identity, translate, rotate, scale, shear, (<+>),
   insideColour, errorCShape)  where
 import Codec.Picture
@@ -108,6 +108,7 @@ transform (Shear (Vector tx ty)) (Vector px py) = Vector (px - (py * tx)) (py - 
 transform (Rotate m)                 p = invert m `mult` p
 
 -- Transformation composition
+-- This also combines transformations together if they are the same type
 transform (Compose Identity t)       p = transform t p
 transform (Compose t Identity)       p = transform t p
 transform (Compose (Translate (Vector tx1 ty1)) (Translate (Vector tx2 ty2))) p = transform (Translate (Vector (tx1 + tx2) (ty1 + ty2))) p

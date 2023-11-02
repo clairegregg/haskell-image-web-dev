@@ -10,29 +10,36 @@ import qualified Text.Blaze.Html5.Attributes as A
 import Network.Wai.Middleware.Static
 import Language.Haskell.Interpreter
 
---exampleDrawing :: [ (Shape, Colour) ]
---exampleDrawing =  [ (polygon [point 0 (-1), point (-0.95) (-0.31), point (-0.59) 0.81, point 0.95 (-0.31), point 0 (-1)], (0, 255, 0)) ]
---exampleDrawing = [(shear (point 0 2) <+> (shear (point 0 2) <+> circle 0.5), (255,0,0))]
+polygonCircleSquare :: String
+polygonCircleSquare = "[ (polygon [point 0 (-1), point (-0.95) (-0.31), point (-0.59) 0.81, point 0.95 (-0.31), point 0 (-1)], (0, 255, 0)), (translate (point 1 0) <+> circle 0.5, (255,0,0)), (shear (point 0.5 0) <+> square 0.25, (0,0,255)) ]"
 
-exampleDrawingText :: String
-exampleDrawingText = "[ (polygon [point 0 (-1), point (-0.95) (-0.31), point (-0.59) 0.81, point 0.95 (-0.31), point 0 (-1)], (0, 255, 0)) ]"
+maskedEllipse :: String
+maskedEllipse = "[ (maskedShape (ellipse 0.4 0.8) (square 0.5), (50,100,150)) ]"
 
-outputFile :: String
-outputFile = "static/output.png"
+drawings :: [(String,String)]
+drawings = [("output1.png",polygonCircleSquare), ("output2.png", maskedEllipse)]
 
 main:: IO ()
 main = do 
-  result <- liftIO runRenderCode
+  result <- liftIO $ renderDrawings drawings
   liftIO $ putStrLn result
   S.scotty 3000 $ do
     S.middleware $ staticPolicy (noDots >-> addBase "static")
     S.get "/" $ S.html response
 
-runRenderCode :: IO String
-runRenderCode = do
+renderDrawings :: [(String, String)] -> IO String
+renderDrawings [] = return ""
+renderDrawings (d:ds) = do 
+                          result <- runRenderCode d
+                          rest <- renderDrawings ds
+                          return (result ++ rest)
+
+
+runRenderCode :: (String,String) -> IO String
+runRenderCode (fileName, dslCode) = do
   result <- runInterpreter $ do
     setImports ["Prelude", "Shapes", "Render"]
-    runStmt ("render \"static/output.png\" defaultWindow " ++ exampleDrawingText)
+    runStmt ("render \"static/"++ fileName ++"\" defaultWindow " ++ dslCode)
   case result of
     Left err -> return $ "Error: " ++ show err
     Right _ -> return "Successfully Rendered!" 
@@ -42,11 +49,19 @@ response = do
             R.renderHtml $ do 
               H.head $ H.title "Generating images using eDSL" 
               H.body $ do
-                H.h1 "Generated image using Haskell eDSL"
-                H.p ("The eDSL code used to generate this image is " >> H.toHtml exampleDrawingText)
-                outputImage
+                H.h1 "Generated images using Haskell eDSL"
+                outputDivs drawings
 
+-- outputDivs [] = 
+  
+outputDivs :: [(String, String)] -> H.Html
+outputDivs [] = H.p ""
+outputDivs (d:ds) = thisImg <> nextImgs
+                      where                       
+                        thisImg = outputImageDiv d 
+                        nextImgs = outputDivs ds
 
-
-outputImage :: H.Html
-outputImage = H.img H.! A.src "/output.png" H.! A.alt "Generated image."
+outputImageDiv :: (String, String) -> H.Html
+outputImageDiv (fileName, dslCode) = H.div $ do 
+                                      H.p ("The eDSL code used to generate this image is " >> H.toHtml dslCode)
+                                      H.img H.! A.src (H.toValue fileName) H.! A.alt "Generated image."
