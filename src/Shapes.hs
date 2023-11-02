@@ -118,15 +118,12 @@ transform (Compose t1 t2)            p = transform t2 $ transform t1 p
 
 -- Shapes with colours
 type Colour = (Pixel8, Pixel8, Pixel8)
-type CShape = (Shape,Colour)
+type CShape = (Shape, Colour)
 
 -- Drawings
 type Drawing = [CShape]
 
 -- interpretation function for drawings
---inside :: Point -> Drawing -> Bool
---inside p d = any (inside1 p) d
-
 inside1 :: Point -> CShape -> Colour
 inside1 p ((t,s),c) = if insides (transform t p) s then c else (0,0,0)
 
@@ -141,9 +138,9 @@ p `insides` (MaskedImage (t1,s1) (t2,s2)) = (transform t1 p `insides` s1) && (tr
 insideColour :: Point -> Drawing -> Colour
 insideColour p d = firstColour $ map (inside1 p) d -- head $ map (approxinside1 p) d 
                    where firstColour :: [Colour] -> Colour
-                         firstColour [] = (0,0,0)
+                         firstColour [] = (0,0,0) -- No drawings? All black
                          firstColour [x]      = x -- Down to the last shape? Use it's colour
-                         firstColour ((0,0,0):xs) = firstColour xs -- skip any 100's unless we're at the end
+                         firstColour ((0,0,0):xs) = firstColour xs -- skip any black colour unless we're at the end
                          firstColour (x:_)    = x -- if you find an "inside" colour return it.
 
 -- Functions for polygon drawing

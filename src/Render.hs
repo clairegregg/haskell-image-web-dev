@@ -12,7 +12,7 @@ data Window = Window Point Point (Int,Int)
 -- Default window renders a small region around the origin into
 -- a 50x50 pixel image
 defaultWindow :: Window
-defaultWindow = Window (point (-1.5) (-1.5)) (point 1.5 1.5) (500,500)
+defaultWindow = Window (point (-1.5) (-1.5)) (point 1.5 1.5) (1000,1000)
 
 
 -- Generate a list of evenly spaced samples between two values.
@@ -29,8 +29,8 @@ pixels (Window p0 p1 (w,h)) =
   ]
 
 -- generate list of all screen coordinates in window
-coords :: Window -> [[(Int,Int)]]
-coords (Window _ _ (w,h)) = [ [(x,y) | x <- [0..w]] | y <- [0..h] ]
+--coords :: Window -> [[(Int,Int)]]
+--coords (Window _ _ (w,h)) = [ [(x,y) | x <- [0..w]] | y <- [0..h] ]
 
 -- render a drawing into an image, then save into a file
 render :: String -> Window -> Drawing -> IO ()

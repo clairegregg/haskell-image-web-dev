@@ -51,8 +51,6 @@ response = do
               H.body $ do
                 H.h1 "Generated images using Haskell eDSL"
                 outputDivs drawings
-
--- outputDivs [] = 
   
 outputDivs :: [(String, String)] -> H.Html
 outputDivs [] = H.p ""
