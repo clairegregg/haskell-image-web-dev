@@ -3,7 +3,7 @@ module Shapes(
   point, getX, getY, cr,
   empty, circle, square, rectangle, polygon, maskedShape,
   identity, translate, rotate, scale, shear, (<+>),
-  insideColour)  where
+  insideColour, errorCShape)  where
 import Codec.Picture
 
 
@@ -161,5 +161,5 @@ distance (Vector x y ) = sqrt ( x**2 + y**2 )
 maxnorm :: Point -> Double
 maxnorm (Vector x y ) = max (abs x) (abs y)
 
-testShape :: (Transform, Double -> Shape)
-testShape = (scale (point 10 10), circle)
+errorCShape :: CShape
+errorCShape = (square 100, (255,0,0))
