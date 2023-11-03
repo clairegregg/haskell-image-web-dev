@@ -31,6 +31,10 @@ data Matrix = Matrix Vector Vector
 matrix :: Double -> Double -> Double -> Double -> Matrix
 matrix a b c d = Matrix (Vector a b) (Vector c d)
 
+matrixMul :: Matrix -> Matrix -> Matrix
+matrixMul (Matrix (Vector a1 b1) (Vector c1 d1)) (Matrix (Vector a2 b2) (Vector c2 d2)) =
+  Matrix (Vector ((a1*a2)+(b1*c2)) ((a1*b2)+(b1*d2))) (Vector ((c1*a2)+(d1*c2)) ((c1*b2)+(d1*d2)))
+
 getX, getY :: Vector -> Double
 getX (Vector x _) = x
 getY (Vector _ y) = y
@@ -80,40 +84,30 @@ maskedShape :: Shape -> Shape -> Shape
 maskedShape s1 s2 = (identity, MaskedImage s1 s2)
 
 -- Transformations
-data Transform = Identity
-           | Translate Vector
-           | Scale Vector
-           | Shear Vector
-           | Compose Transform Transform
-           | Rotate Matrix
-             deriving Show
+data Transform = Affine Matrix 
+                | Translate Vector
+                | Compose Transform Transform
+                deriving Show
 
 identity :: Transform
-identity = Identity
+identity = Affine (Matrix (Vector 1 0) (Vector 0 1))
 translate, scale, shear :: Vector -> Transform
 translate = Translate
-scale = Scale
-shear = Shear
+scale (Vector x y) = Affine $ matrix x 0 0 y
+shear (Vector x y) = Affine $ matrix 1 x y 1
 rotate :: Double -> Transform
-rotate angle = Rotate $ matrix (cos angle) (-sin angle) (sin angle) (cos angle)
+rotate angle = Affine $ matrix (cos angle) (-sin angle) (sin angle) (cos angle)
 
 (<+>) :: Transform -> Shape -> Shape -- Apply another transformation to a shape
 t0 <+> (t1,s) = (Compose t0 t1, s)
 
 transform :: Transform -> Point -> Point
-transform Identity                   x = x
+transform (Affine m)                   p = invert m `mult` p
 transform (Translate (Vector tx ty)) (Vector px py)  = Vector (px - tx) (py - ty)
-transform (Scale (Vector tx ty))     (Vector px py)  = Vector (px / tx)  (py / ty)
-transform (Shear (Vector tx ty)) (Vector px py) = Vector (px - (py * tx)) (py - (px * ty))
-transform (Rotate m)                 p = invert m `mult` p
 
 -- Transformation composition
--- This also combines transformations together if they are the same type
-transform (Compose Identity t)       p = transform t p
-transform (Compose t Identity)       p = transform t p
+transform (Compose (Affine m1) (Affine m2))       p = transform (Affine $ matrixMul m1 m2) p
 transform (Compose (Translate (Vector tx1 ty1)) (Translate (Vector tx2 ty2))) p = transform (Translate (Vector (tx1 + tx2) (ty1 + ty2))) p
-transform (Compose (Scale (Vector tx1 ty1)) (Scale (Vector tx2 ty2))) p = transform (Scale (Vector (tx1 * tx2) (ty1 * ty2))) p
-transform (Compose (Shear (Vector tx1 ty1)) (Shear (Vector tx2 ty2))) p = transform (Shear (Vector (tx1 * tx2) (ty1 * ty2))) p
 transform (Compose t1 t2)            p = transform t2 $ transform t1 p
 
 -- Shapes with colours
