@@ -16,11 +16,8 @@ polygonCircleSquare = "[ (scale  (point 0.25 0.25) <+> (translate (point (-1) (-
 maskedEllipse :: String
 maskedEllipse = "[ (maskedShape (ellipse 0.4 0.8) (square 0.5), (50,100,150)) ]"
 
-cat ::String
-cat = "[ (polygon [point 6.09 5.80, point 7.92 7.66, point 7.86 3.89, point 7.97 2.56, point 6.51 0.41, point 3.91 0.20,  point 2.14 2.11, point 2.11 7.78, point 4.77 5.99, point 6.09 5.80], (255, 255, 3))]"
-
 drawings :: [(String,String)]
-drawings = [("output1.png",polygonCircleSquare), ("output2.png", maskedEllipse), ("output3.png", cat)]
+drawings = [("output1.png", polygonCircleSquare), ("output2.png", maskedEllipse)]
 
 main:: IO ()
 main = do 

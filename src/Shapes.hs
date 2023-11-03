@@ -84,7 +84,7 @@ maskedShape :: Shape -> Shape -> Shape
 maskedShape s1 s2 = (identity, MaskedImage s1 s2)
 
 -- Transformations
-data Transform = Affine Matrix 
+data Transform = Affine Matrix
                 | Translate Vector
                 | Compose Transform Transform
                 deriving Show
@@ -145,7 +145,7 @@ polygonCountIntersects p (a:as) = polygonCountIntersects p as + x
                                       where x = if rayIntersects p (a, head as) then 1 else 0
 
 rayIntersects :: Point -> (Point, Point) -> Bool
-rayIntersects (Vector x y) (Vector x1 y1, Vector x2 y2) = (x < max ax bx) && (y > min ay by) && (y < max ay by) && ((x < min ax bx)||(pointSlope > lineSlope))
+rayIntersects (Vector x y) (Vector x1 y1, Vector x2 y2) = not ((y==y1) || (y==y2) || (x > max ax bx) || (y < ay) || (y > by)) && ((x < min ax bx)||(pointSlope > lineSlope))
                                                           where (ax, ay, bx, by) = if y1 < y2 then (x1, y1, x2, y2) else (x2, y2, x1, y1)
                                                                 lineSlope = (by - ay) / (bx - ax)  -- if bx-ax = 0, this is infinity in Haskell
                                                                 pointSlope = (y - ay) / (x - ax) -- if x-ax = 0, this is infinity in Haskell
