@@ -12,7 +12,7 @@ data Window = Window Point Point (Int,Int)
 -- Default window renders a small region around the origin into
 -- a 50x50 pixel image
 defaultWindow :: Window
-defaultWindow = Window (point (-1.5) (-1.5)) (point 1.5 1.5) (1000,1000)
+defaultWindow = Window (point (-1.5) (-1.5)) (point 1.5 1.5) (500,500)
 
 
 -- Generate a list of evenly spaced samples between two values.

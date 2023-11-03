@@ -133,7 +133,7 @@ insideColour :: Point -> Drawing -> Colour
 insideColour p d = firstColour $ map (inside1 p) d -- head $ map (approxinside1 p) d 
                    where firstColour :: [Colour] -> Colour
                          firstColour [] = (0,0,0) -- No drawings? All black
-                         firstColour [x]      = x -- Down to the last shape? Use it's colour
+                         firstColour [x]      = x -- Down to the last shape? Use its colour
                          firstColour ((0,0,0):xs) = firstColour xs -- skip any black colour unless we're at the end
                          firstColour (x:_)    = x -- if you find an "inside" colour return it.
 
@@ -145,7 +145,10 @@ polygonCountIntersects p (a:as) = polygonCountIntersects p as + x
                                       where x = if rayIntersects p (a, head as) then 1 else 0
 
 rayIntersects :: Point -> (Point, Point) -> Bool
-rayIntersects (Vector x y) (Vector ax ay, Vector bx by) = (x <= min ax bx) && (y >= min ay by) && (y <= max ay by)
+rayIntersects (Vector x y) (Vector x1 y1, Vector x2 y2) = (x < max ax bx) && (y > min ay by) && (y < max ay by) && ((x < min ax bx)||(pointSlope > lineSlope))
+                                                          where (ax, ay, bx, by) = if y1 < y2 then (x1, y1, x2, y2) else (x2, y2, x1, y1)
+                                                                lineSlope = (by - ay) / (bx - ax)  -- if bx-ax = 0, this is infinity in Haskell
+                                                                pointSlope = (y - ay) / (x - ax) -- if x-ax = 0, this is infinity in Haskell
 
 distance :: Point -> Double
 distance (Vector x y ) = sqrt ( x**2 + y**2 )
