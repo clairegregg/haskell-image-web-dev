@@ -58,7 +58,7 @@ empty = Empty
 cr = UnitCircle
 sq = UnitSquare
 
-poly :: [ Point ] -> BaseShape -- Note that polygon requires the list of points be closed (ie the first element is the same as the last element)
+poly :: [ Point ] -> BaseShape
 poly = BasePolygon
 
 -- Shapes - this is what the user should be interacting with
